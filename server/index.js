@@ -20,19 +20,28 @@ app.use(express.json());
 let pool;
 
 const connectDB = async () => {
+  if (!process.env.DATABASE_URL) {
+    console.error('❌ DATABASE_URL is missing! Please set it in Render Environment Variables.');
+    return;
+  }
   try {
     pool = mysql.createPool({ 
       uri: process.env.DATABASE_URL,
-      ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true }
+      ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true },
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0
     });
-    console.log('Connected to MySQL via pool');
+    console.log('✅ Connected to MySQL via pool');
   } catch (err) {
-    console.error('MySQL Connection Error:', err);
-    process.exit(1);
+    console.error('❌ MySQL Connection Error:', err);
   }
 };
 
-connectDB();
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  connectDB();
+});
 
 // API Routes
 app.post('/api/login', async (req, res) => {
@@ -88,6 +97,3 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
