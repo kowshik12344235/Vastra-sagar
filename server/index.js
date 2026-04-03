@@ -89,11 +89,18 @@ app.delete('/api/sales/:id', async (req, res) => {
   }
 });
 
-// Serve frontend in production
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, '../dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist/index.html'));
-  });
-}
+// API Health Check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', database: pool ? 'connected' : 'connecting' });
+});
+
+// Serve frontend files
+const distPath = path.join(__dirname, '../dist');
+console.log(`Server looking for static files at: ${distPath}`);
+
+app.use(express.static(distPath));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
+});
 
