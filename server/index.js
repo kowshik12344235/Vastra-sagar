@@ -34,19 +34,15 @@ const connectDB = async () => {
     });
     console.log('✅ Connected to MySQL via pool');
   } catch (err) {
-    console.error('❌ MySQL Connection Error:', err);
+    console.error('❌ MySQL Connection Error:', err.message);
   }
 };
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  connectDB();
-});
 
 // API Routes
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   try {
+    if (!pool) return res.status(503).json({ success: false, message: 'Database not connected' });
     const [rows] = await pool.query('SELECT * FROM users WHERE username = ? AND password = ?', [username, password]);
     if (rows.length > 0) {
       res.json({ success: true, user: { id: rows[0].id, username: rows[0].username } });
@@ -60,6 +56,7 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/sales', async (req, res) => {
   try {
+    if (!pool) return res.status(503).json({ error: 'Database not connected' });
     const [rows] = await pool.query('SELECT * FROM sales ORDER BY date DESC');
     res.json(rows);
   } catch (err) {
@@ -70,6 +67,7 @@ app.get('/api/sales', async (req, res) => {
 app.post('/api/sales', async (req, res) => {
   const { id, name, category, quantity, costPrice, sellingPrice, profit, date, customerName, paymentMode } = req.body;
   try {
+    if (!pool) return res.status(503).json({ error: 'Database not connected' });
     await pool.query(
       'INSERT INTO sales (id, name, category, quantity, costPrice, sellingPrice, profit, date, customerName, paymentMode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [id, name, category, quantity, costPrice, sellingPrice, profit, date, customerName, paymentMode]
@@ -82,6 +80,7 @@ app.post('/api/sales', async (req, res) => {
 
 app.delete('/api/sales/:id', async (req, res) => {
   try {
+    if (!pool) return res.status(503).json({ error: 'Database not connected' });
     await pool.query('DELETE FROM sales WHERE id = ?', [req.params.id]);
     res.json({ success: true });
   } catch (err) {
@@ -96,11 +95,15 @@ app.get('/api/health', (req, res) => {
 
 // Serve frontend files
 const distPath = path.join(__dirname, '../dist');
-console.log(`Server looking for static files at: ${distPath}`);
-
 app.use(express.static(distPath));
 
+// Handle React routing, return all requests to React app
 app.get('*', (req, res) => {
   res.sendFile(path.join(distPath, 'index.html'));
 });
 
+// Start Server - ON RENDER, LISTENING ON 0.0.0.0 IS ESSENTIAL
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT} at 0.0.0.0`);
+  connectDB();
+});
