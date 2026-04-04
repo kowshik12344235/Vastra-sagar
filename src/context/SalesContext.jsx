@@ -6,7 +6,7 @@ const SalesContext = createContext();
 export const SalesProvider = ({ children }) => {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [categories] = useState(['Shirt', 'Pant', 'Saree', 'Kurti', 'Dress Material', 'Other']);
+  const [categories] = useState(['Shirt', 'Pant', 'Kids', 'Vests', 'Briefs', 'Suits', 'Party Wear', 'Other']);
 
   useEffect(() => {
     fetchSales();
@@ -104,9 +104,10 @@ export const SalesProvider = ({ children }) => {
         sales: count,
         revenue,
         profit,
-        cost: daySales.reduce((sum, s) => sum + s.cost, 0)
+        cost: daySales.reduce((sum, s) => sum + s.cost, 0),
+        isToday: isToday(day) // Track it here for easy filtering
       };
-    }).filter(d => d.sales > 0 || isToday(parseISO(d.date)));
+    }).filter(d => d.sales > 0 || d.isToday);
   };
 
   return (
