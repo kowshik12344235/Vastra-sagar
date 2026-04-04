@@ -1,10 +1,33 @@
 import React, { useState, useMemo } from 'react';
 import { useSales } from '../context/SalesContext';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar, Line } from 'react-chartjs-2';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  LineElement, 
+  PointElement, 
+  Title, 
+  Tooltip, 
+  Legend,
+  LineController,
+  BarController
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import { format } from 'date-fns';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  LineElement, 
+  PointElement, 
+  Title, 
+  Tooltip, 
+  Legend,
+  LineController,
+  BarController
+);
 
 const Reports = () => {
   const { sales, getDailyReport } = useSales();
