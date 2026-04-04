@@ -76,12 +76,22 @@ export const SalesProvider = ({ children }) => {
   };
 
   const getStats = () => {
-    const today = sales.filter(s => isToday(parseISO(s.date)));
+    const today = sales.filter(s => {
+      try {
+        const dateObj = parseISO(s.date);
+        return isToday(dateObj) && !isNaN(dateObj);
+      } catch (e) {
+        return false;
+      }
+    });
     
     const todaySales = today.reduce((sum, s) => sum + s.quantity, 0);
     const todayRevenue = today.reduce((sum, s) => sum + s.revenue, 0);
     const todayProfit = today.reduce((sum, s) => sum + s.profit, 0);
-    const totalProfit = sales.reduce((sum, s) => sum + s.profit, 0);
+    const totalProfit = sales.reduce((sum, s) => {
+      const p = parseFloat(s.profit);
+      return sum + (isNaN(p) ? 0 : p);
+    }, 0);
 
     return { todaySales, todayRevenue, todayProfit, totalProfit };
   };
