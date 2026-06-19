@@ -94,6 +94,26 @@ app.get('/api/health', async (req, res) => {
   res.json({ status: 'ok', database: db ? 'connected' : 'connecting' });
 });
 
+// TEMPORARY: Reset credentials (delete this after visiting the URL)
+app.get('/api/reset-credentials-temp', async (req, res) => {
+  try {
+    const db = await connectDB();
+    if (!db) return res.status(503).json({ error: 'Database not connected' });
+    
+    const newUsername = 'vastrasagar'; 
+    const newPassword = 'surya1234';
+
+    await db.query(
+      'UPDATE users SET username = ?, password = ? WHERE username = "admin" OR id = 1',
+      [newUsername, newPassword]
+    );
+
+    res.json({ success: true, message: `Credentials successfully changed to: ${newUsername} / ${newPassword}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // For local development
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 5000;
